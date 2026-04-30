@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { apiData } from "../utils/apiData";
 import VideoCard from "./VideoCard";
 
@@ -6,7 +7,9 @@ const VideoContainer = () => {
   return (
     <div className="flex flex-wrap">
       {videos.map((video) => (
-        <VideoCard info={video} key={video.video_id} />
+        <Link to={`/watch?v=${video.video_id}`}>
+          <VideoCard info={video} key={video.video_id} />
+        </Link>
       ))}
     </div>
   );
