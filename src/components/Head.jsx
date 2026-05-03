@@ -1,7 +1,26 @@
 import { useDispatch } from "react-redux";
 import { toggleMenu } from "../utils/appSlice";
+import { useEffect, useState } from "react";
+import { keywords } from "../utils/constant";
 
 const Head = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const getSearchSuggestions = () => {
+    const json = keywords.filter((item) =>
+      item.toLocaleLowerCase().startsWith(searchQuery.toLocaleLowerCase()),
+    );
+    console.log("json", json);
+  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      getSearchSuggestions();
+    }, 200);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
+
   const dispatch = useDispatch();
   const toggleMenuHandler = () => {
     dispatch(toggleMenu());
@@ -27,6 +46,8 @@ const Head = () => {
       <div className="col-span-10 px-10">
         <input
           type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="border border-gray-400 w-1/2 p-2 rounded-l-full"
         />
         <button className="border border-gray-400 p-2 rounded-r-full">
