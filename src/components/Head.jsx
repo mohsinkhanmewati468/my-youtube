@@ -1,27 +1,39 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toggleMenu } from "../utils/appSlice";
 import { useEffect, useState } from "react";
 import { keywords } from "../utils/constant";
+import { cacheResults } from "../utils/searchSlice";
 
 const Head = () => {
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchCache = useSelector((store) => store.search);
+  const dispatch = useDispatch();
   const getSearchSuggestions = () => {
+    if (!searchQuery) {
+      setSuggestions([]);
+      return;
+    }
     const json = keywords.filter((item) =>
       item.toLocaleLowerCase().startsWith(searchQuery.toLocaleLowerCase()),
     );
-    console.log("json", json);
+    setSuggestions(json);
+    dispatch(cacheResults({ [searchQuery]: json }));
   };
   useEffect(() => {
     const timer = setTimeout(() => {
-      getSearchSuggestions();
+      if (searchCache[searchQuery]) {
+        setSuggestions(searchCache[searchQuery]);
+      } else {
+        getSearchSuggestions();
+      }
     }, 200);
     return () => {
       clearTimeout(timer);
     };
   }, [searchQuery]);
 
-  const dispatch = useDispatch();
   const toggleMenuHandler = () => {
     dispatch(toggleMenu());
   };
@@ -44,15 +56,30 @@ const Head = () => {
         </a>
       </div>
       <div className="col-span-10 px-10">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="border border-gray-400 w-1/2 p-2 rounded-l-full"
-        />
-        <button className="border border-gray-400 p-2 rounded-r-full">
-          Search
-        </button>
+        <div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="px-5 border border-gray-400 w-1/2 p-2 rounded-l-full"
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setShowSuggestions(false)}
+          />
+          <button className="border border-gray-400 p-2 rounded-r-full">
+            Search
+          </button>
+        </div>
+        {showSuggestions && suggestions.length > 0 && (
+          <div className="fixed bg-white py-2 px-2 w-140 shadow-lg rounded-lg border-gray-100">
+            <ul>
+              {suggestions.map((s, i) => (
+                <li className="px-3 py-2 shadow-sm hover:bg-gray-100" key={i}>
+                  🔍{s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
       <div className="col-span-1">
         <img
